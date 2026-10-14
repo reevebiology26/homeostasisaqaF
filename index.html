@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQA Biology Foundation: Homeostasis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .touch-draggable {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: grab;
+    }
+    .touch-draggable:active {
+      cursor: grabbing;
+    }
+    .dragging-card {
+      opacity: 0.6;
+      transform: scale(0.98);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-color: #8b5cf6 !important;
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-float-delayed { animation: float 8s ease-in-out infinite; animation-delay: 2s; }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .animate-gradient {
+      background-size: 200% 200%;
+      animation: gradientShift 8s ease infinite;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #score-modal-content, #score-modal-content * { visibility: visible; }
+      #score-modal-content { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen lg:h-screen lg:overflow-hidden flex flex-col selection:bg-violet-500 selection:text-white">
+
+  <div id="splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-500 to-blue-50 animate-gradient overflow-hidden transition-all duration-700">
+    
+    <!-- Abstract Floating Background Elements -->
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-white/30 blur-[80px] animate-float pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] rounded-full bg-blue-300/40 blur-[100px] animate-float-delayed pointer-events-none"></div>
+    
+    <!-- Subtle Dot Pattern Overlay -->
+    <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+      <pattern id="pattern-circles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+        <circle cx="20" cy="20" r="1.5" fill="#ffffff" />
+      </pattern>
+      <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-circles)" />
+    </svg>
+
+    <div class="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-4xl w-full">
+      <div class="flex items-center justify-center gap-8 sm:gap-16 mb-6 animate-fade-in">
+        
+        <!-- Endocrine System Torso SVG -->
+        <svg width="100" height="120" viewBox="0 0 100 120" class="drop-shadow-2xl animate-float">
+          <!-- Translucent Body Outline -->
+          <path d="M 50 5 C 65 5 70 18 70 28 C 70 38 60 45 57 48 C 70 50 82 58 85 75 L 85 115 L 15 115 L 15 75 C 18 58 30 50 43 48 C 40 45 30 38 30 28 C 30 18 35 5 50 5 Z" fill="#bae6fd" fill-opacity="0.3" stroke="#ffffff" stroke-width="2.5"/>
+          
+          <!-- Pituitary Gland (Brain) -->
+          <circle cx="50" cy="24" r="3.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.5"/>
+          <!-- Thyroid Gland (Neck) -->
+          <path d="M 44 44 Q 50 48 56 44 Q 53 50 50 47 Q 47 50 44 44 Z" fill="#eab308" stroke="#ffffff" stroke-width="0.5"/>
+          <!-- Adrenal Glands (Kidneys) -->
+          <polygon points="38,62 44,68 32,68" fill="#22c55e" stroke="#ffffff" stroke-width="0.5"/>
+          <polygon points="62,62 68,68 56,68" fill="#22c55e" stroke="#ffffff" stroke-width="0.5"/>
+          <!-- Pancreas (Abdomen) -->
+          <path d="M 42 76 Q 50 72 58 78 Q 50 80 42 76 Z" fill="#a855f7" stroke="#ffffff" stroke-width="0.5"/>
+          <!-- Ovaries/Testes (Pelvis) -->
+          <circle cx="37" cy="95" r="4" fill="#f97316" stroke="#ffffff" stroke-width="0.5"/>
+          <circle cx="63" cy="95" r="4" fill="#f97316" stroke="#ffffff" stroke-width="0.5"/>
+        </svg>
+
+        <!-- Glucose Meter SVG -->
+        <svg width="80" height="100" viewBox="0 0 100 120" class="drop-shadow-2xl animate-float-delayed">
+          <!-- Device Body -->
+          <rect x="20" y="10" width="60" height="80" rx="10" fill="#1e293b" stroke="#ffffff" stroke-width="2"/>
+          <!-- Screen -->
+          <rect x="30" y="25" width="40" height="30" rx="4" fill="#bae6fd" />
+          <text x="50" y="47" fill="#0369a1" font-size="18" font-family="monospace" font-weight="bold" text-anchor="middle">5.4</text>
+          <!-- Button -->
+          <circle cx="50" cy="70" r="7" fill="#3b82f6" />
+          <!-- Test Strip -->
+          <rect x="42" y="90" width="16" height="25" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+          <!-- Blood Drop -->
+          <path d="M50,95 Q54,103 50,108 Q46,103 50,95 Z" fill="#ef4444" />
+        </svg>
+      </div>
+
+      <!-- Mini Spec Badge -->
+      <div class="inline-flex items-center gap-2 mb-4 px-5 py-2 rounded-full bg-blue-900/40 backdrop-blur-md border border-blue-400/30 text-blue-50 font-bold text-xs sm:text-sm tracking-widest uppercase shadow-xl animate-fade-in" style="animation-delay: 0.2s;">
+        <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+        AQA GCSE Biology Foundation
+      </div>
+      
+      <!-- Massive Title -->
+      <h1 class="text-5xl sm:text-7xl lg:text-9xl font-black text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.4)] tracking-tighter mb-4 animate-fade-in" style="animation-delay: 0.3s;">
+        HOMEOSTASIS
+      </h1>
+      
+      <!-- Subtitle -->
+      <p class="text-blue-50 text-base sm:text-xl lg:text-2xl font-semibold max-w-2xl mx-auto mb-10 sm:mb-12 drop-shadow-md animate-fade-in" style="animation-delay: 0.5s;">
+        Master control systems, reflexes, hormones, and blood glucose in this ultimate interactive revision experience.
+      </p>
+      
+      <!-- Glowing Launch Button -->
+      <button onclick="dismissSplashScreen()" class="group relative px-8 py-4 sm:px-12 sm:py-5 bg-white text-blue-900 font-black text-lg sm:text-2xl rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_rgba(255,255,255,0.7)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer animate-fade-in" style="animation-delay: 0.7s;">
+        <span class="relative z-10 flex items-center gap-3">
+          <span>🚀</span> Launch Revision
+        </span>
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-200 to-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
+      </button>
+    </div>
+
+    <!-- Prominent Brought to you by Credit -->
+    <div class="absolute bottom-6 left-0 right-0 flex flex-col items-center justify-center text-center px-4 animate-fade-in pointer-events-none" style="animation-delay: 1s;">
+      <div class="bg-blue-950/70 backdrop-blur-xl border-2 border-blue-400/60 px-8 sm:px-14 py-3 sm:py-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform hover:scale-105 transition-transform duration-300 pointer-events-auto cursor-default">
+        <p class="text-blue-300 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] mb-1 drop-shadow-md">Brought to you by</p>
+        <p class="text-white text-lg sm:text-3xl font-black tracking-wide drop-shadow-2xl">Andy Reeve Resource Creation</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Header Navigation -->
+  <header class="bg-gradient-to-r from-slate-900 via-violet-950 to-slate-900 text-white border-b border-violet-800/60 sticky top-0 z-40 shadow-sm shrink-0">
+    <div class="max-w-[1550px] mx-auto px-2 sm:px-4 py-1">
+      <div class="flex items-center justify-between gap-2">
+        
+        <!-- Left: Logo & Spec Credit -->
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-violet-500/20 border border-violet-400/50 flex items-center justify-center text-violet-300 font-bold shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight leading-none">AQA Biology Foundation: Homeostasis</h1>
+              <span class="text-[9px] px-1 py-0.5 rounded bg-violet-500/20 text-violet-300 font-semibold border border-violet-400/30">Topic 5</span>
+            </div>
+            <p class="text-[10px] text-amber-300 font-semibold tracking-wide">Andy Reeve Resource Creation</p>
+          </div>
+        </div>
+
+        <!-- Right: Streak Display & Screen Shot Score Button -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div id="top-streak-display" class="hidden items-center gap-1.5 px-3 py-0.5 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-xs sm:text-sm rounded-lg shadow-[0_0_10px_rgba(249,115,22,0.8)] border border-orange-300 transition-all duration-300 transform scale-95 opacity-0">
+            <span>🔥 Streak:</span>
+            <span id="streak-counter-val" class="text-base sm:text-lg drop-shadow-md">0</span>
+          </div>
+          <button onclick="promptAndOpenScorecard()" class="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-[11px] sm:text-xs rounded-lg shadow border border-amber-300 flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+            <span>📸</span>
+            <span class="whitespace-nowrap">Screenshot Score</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top Tabs -->
+      <nav class="flex items-center justify-between gap-1 mt-1 pt-0.5 border-t border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-300 overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-violet-400 text-violet-300 bg-slate-800/80 font-bold">1. Control Systems</button>
+        <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">2. Reflex Order</button>
+        <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">3. Endocrine Glands</button>
+        <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">4. 20 MCQ Quiz</button>
+        <button onclick="switchTab('tab5')" id="btn-tab5" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">5. Blood Glucose</button>
+        <button onclick="switchTab('tab6')" id="btn-tab6" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">6. Menstrual Cycle</button>
+        <button onclick="switchTab('tab7')" id="btn-tab7" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">7. 6-Marker Essays</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-[1550px] w-full mx-auto px-2 sm:px-3 py-1 flex flex-col justify-start lg:overflow-hidden lg:h-[calc(100vh-70px)]">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: CONTROL SYSTEMS (DISAPPEARING MATCHER)            -->
+    <!-- ======================================================== -->
+    <section id="tab1" class="tab-pane block h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-sky-800 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200 hidden sm:inline-block">Activity 1</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">Control Systems: Match Key Term to Definition</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-sky-50 border border-sky-200 px-2 py-0.5 rounded text-xs font-bold text-sky-900">
+              Score: <span id="tab1-score" class="font-mono text-sky-700">0</span> / 8
+            </div>
+            <button onclick="resetTab1()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Shuffle</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow items-stretch overflow-hidden">
+          <div class="lg:col-span-4 bg-slate-50 p-2 rounded-xl border border-slate-200 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200 mb-1">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">Key Terms:</span>
+            </div>
+            <div id="tab1-terms-bank" class="space-y-1.5 overflow-y-auto pr-1 flex-grow"></div>
+            <div id="tab1-selection-status" class="text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0">
+              Tap a key term, then tap its definition. Correct matches will disappear!
+            </div>
+          </div>
+          <div class="lg:col-span-8 flex flex-col gap-1.5 overflow-y-auto pr-1 relative" id="tab1-defs-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: REFLEX ARC REORDER (DRAG & DROP)                  -->
+    <!-- ======================================================== -->
+    <section id="tab2" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2.5 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 hidden sm:inline-block">Reorder Task</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">The Reflex Arc: Touching a Hot Pan</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded text-xs font-bold text-indigo-900">
+              Score: <span id="tab2-score" class="font-mono text-indigo-700">0</span> / 8
+            </div>
+            <button onclick="checkReflexOrder()" class="px-2.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold transition cursor-pointer">✓ Check</button>
+            <button onclick="resetReflexOrder()" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold border border-slate-300 transition cursor-pointer">Shuffle</button>
+          </div>
+        </div>
+
+        <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 shrink-0">
+          Use the <strong>▲ Up</strong> and <strong>▼ Down</strong> buttons (or drag) to sequence the nervous pathway from start to finish:
+        </p>
+
+        <div id="reflex-sentences-list" class="flex flex-col justify-between gap-1.5 flex-grow overflow-hidden my-1 select-none"></div>
+        <div id="reflex-feedback-banner" class="hidden p-1.5 rounded-lg text-xs font-bold border shrink-0"></div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: ENDOCRINE GLANDS (PINS)                           -->
+    <!-- ======================================================== -->
+    <section id="tab3" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-violet-800 bg-violet-50 px-1.5 py-0.5 rounded border border-violet-200 hidden sm:inline-block">Activity 3</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">Endocrine System: Tap Label then Pin (A–F)</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-violet-50 border border-violet-200 px-2 py-0.5 rounded text-xs font-bold text-violet-900">
+              Score: <span id="tab3-score" class="font-mono text-violet-700">0</span> / 6
+            </div>
+            <button onclick="resetTab3()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Reset</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow items-stretch overflow-hidden">
+          
+          <div class="lg:col-span-8 bg-slate-900 rounded-xl p-2 border border-slate-800 flex flex-col justify-between items-center text-white relative">
+            <div class="w-full flex items-center justify-between text-[10px] text-slate-400 font-mono px-1">
+              <span class="text-violet-400 font-semibold" id="tab3-selection-status">● Tap a gland on right, then tap letter circle A–F</span>
+            </div>
+
+            <div class="w-full flex items-center justify-center flex-grow py-0.5">
+              <svg viewBox="0 0 400 500" class="w-full max-h-[330px] select-none">
+                <!-- Head -->
+                <circle cx="200" cy="80" r="40" fill="#cbd5e1" opacity="0.3"/>
+                <!-- Neck -->
+                <rect x="185" y="120" width="30" height="30" fill="#cbd5e1" opacity="0.3"/>
+                <!-- Torso -->
+                <rect x="120" y="150" width="160" height="220" rx="30" fill="#cbd5e1" opacity="0.3"/>
+                <!-- Legs (upper) -->
+                <path d="M 140 370 L 140 450 L 180 450 L 180 370 Z" fill="#cbd5e1" opacity="0.3"/>
+                <path d="M 220 370 L 220 450 L 260 450 L 260 370 Z" fill="#cbd5e1" opacity="0.3"/>
+                <!-- Brain Graphic -->
+                <ellipse cx="200" cy="70" rx="20" ry="15" fill="#f87171" opacity="0.4"/>
+                
+                <!-- Pins A-F -->
+                <g class="cursor-pointer" onclick="handleTab3PinClick('A')"><circle cx="200" cy="85" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-A"/><text x="200" y="90" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-A">A</text></g>
+                <g class="cursor-pointer" onclick="handleTab3PinClick('B')"><circle cx="200" cy="140" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-B"/><text x="200" y="145" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-B">B</text></g>
+                <g class="cursor-pointer" onclick="handleTab3PinClick('C')"><circle cx="160" cy="220" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-C"/><text x="160" y="225" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-C">C</text></g>
+                <g class="cursor-pointer" onclick="handleTab3PinClick('D')"><circle cx="200" cy="250" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-D"/><text x="200" y="255" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-D">D</text></g>
+                <g class="cursor-pointer" onclick="handleTab3PinClick('E')"><circle cx="160" cy="330" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-E"/><text x="160" y="335" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-E">E</text></g>
+                <g class="cursor-pointer" onclick="handleTab3PinClick('F')"><circle cx="200" cy="390" r="15" fill="#1e293b" stroke="#f8fafc" stroke-width="2" stroke-dasharray="3,3" id="t3circ-F"/><text x="200" y="395" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" id="t3txt-F">F</text></g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 flex flex-col justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div>
+              <div class="flex items-center justify-between pb-1.5 border-b border-slate-200 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">Endocrine Glands:</span>
+              </div>
+              <div id="tab3-glands-bank" class="flex flex-col gap-1.5"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: 20 MCQ QUIZ                                       -->
+    <!-- ======================================================== -->
+    <section id="tab4" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 hidden sm:inline-block">Exam Test</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">20 MCQ Quiz: Foundation Homeostasis</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              Q <span id="tab4-current-q-num" class="text-violet-700">1</span> / <span id="tab4-total-q-num">20</span>
+            </span>
+            <div class="bg-violet-50 border border-violet-200 px-2 py-0.5 rounded text-xs font-bold text-violet-900">
+              Score: <span id="tab4-score" class="font-mono text-violet-700">0</span>
+            </div>
+            <button onclick="resetMCQ20()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Restart</button>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden shrink-0 mt-1">
+          <div id="tab4-progress-bar" class="bg-violet-500 h-full w-[5%] transition-all duration-300"></div>
+        </div>
+
+        <div id="tab4-single-card" class="flex-grow flex flex-col justify-center max-w-3xl w-full mx-auto py-2"></div>
+
+        <div id="tab4-summary" class="hidden flex-grow flex flex-col items-center justify-center max-w-lg w-full mx-auto text-center p-4">
+          <div class="w-12 h-12 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-2xl font-bold mb-2">🏆</div>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900">Quiz Completed!</h3>
+          <p class="text-xs text-slate-600 mt-1">Final Score: <span id="tab4-final-score" class="font-bold text-violet-700 text-sm">0</span> / 20</p>
+          <p id="tab4-summary-feedback" class="text-xs text-slate-500 mt-1"></p>
+
+          <div class="flex items-center gap-2 mt-4">
+            <button id="btn-retest-missed" onclick="retestMissedQuestions()" class="hidden px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition shadow-xs cursor-pointer">
+              🔄 Retest Missed (<span id="retest-count">0</span>)
+            </button>
+            <button onclick="resetMCQ20()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition shadow-xs cursor-pointer">
+              Retake All
+            </button>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100 shrink-0">
+          <span>Auto-advances in 1.8s.</span>
+          <span id="tab4-mode-indicator" class="font-semibold text-slate-500">Standard Mode</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: BLOOD GLUCOSE (DISAPPEARING MATCHER)              -->
+    <!-- ======================================================== -->
+    <section id="tab5" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 hidden sm:inline-block">Activity 5</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">Blood Glucose Control: Match Concept to Description</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs font-bold text-emerald-900">
+              Score: <span id="tab5-score" class="font-mono text-emerald-700">0</span> / 6
+            </div>
+            <button onclick="resetTab5()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Shuffle</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow items-stretch overflow-hidden">
+          <div class="lg:col-span-4 bg-slate-50 p-2 rounded-xl border border-slate-200 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200 mb-1">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">Concepts:</span>
+            </div>
+            <div id="tab5-concepts-bank" class="space-y-1.5 overflow-y-auto pr-1 flex-grow"></div>
+            <div id="tab5-selection-status" class="text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0">
+              Tap a concept, then its description. Correct matches vanish!
+            </div>
+          </div>
+          <div class="lg:col-span-8 flex flex-col gap-1.5 overflow-y-auto pr-1 relative" id="tab5-defs-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: MENSTRUAL CYCLE (DISAPPEARING MATCHER)            -->
+    <!-- ======================================================== -->
+    <section id="tab6" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-pink-800 bg-pink-50 px-1.5 py-0.5 rounded border border-pink-200 hidden sm:inline-block">Activity 6</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">Menstrual Cycle & Contraception Matcher</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-pink-50 border border-pink-200 px-2 py-0.5 rounded text-xs font-bold text-pink-900">
+              Score: <span id="tab6-score" class="font-mono text-pink-700">0</span> / 6
+            </div>
+            <button onclick="resetTab6()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Shuffle</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow items-stretch overflow-hidden">
+          <div class="lg:col-span-4 bg-slate-50 p-2 rounded-xl border border-slate-200 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200 mb-1">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">Hormone / Method:</span>
+            </div>
+            <div id="tab6-items-bank" class="space-y-1.5 overflow-y-auto pr-1 flex-grow"></div>
+            <div id="tab6-selection-status" class="text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0">
+              Tap an item, then its function.
+            </div>
+          </div>
+          <div class="lg:col-span-8 flex flex-col gap-1.5 overflow-y-auto pr-1 relative" id="tab6-defs-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 7: 3 AQA FOUNDATION 6-MARK LONG ANSWER QUESTIONS     -->
+    <!-- ======================================================== -->
+    <section id="tab7" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2.5 flex flex-col h-full justify-between overflow-hidden">
+        
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold text-fuchsia-700 bg-fuchsia-50 px-1.5 py-0.5 rounded border border-fuchsia-200 hidden sm:inline-block">Extended Writing</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">3 AQA 6-Mark Questions (Foundation)</h2>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <button onclick="loadTab7Question(1)" id="tab7-qbtn-1" class="px-2 py-0.5 rounded text-xs font-bold bg-fuchsia-600 text-white shadow-xs cursor-pointer flex items-center gap-1">
+              <span>Q1</span><span id="tab7-badge-1" class="text-[10px] opacity-80">(0/6)</span>
+            </button>
+            <button onclick="loadTab7Question(2)" id="tab7-qbtn-2" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer flex items-center gap-1">
+              <span>Q2</span><span id="tab7-badge-2" class="text-[10px] opacity-80">(0/6)</span>
+            </button>
+            <button onclick="loadTab7Question(3)" id="tab7-qbtn-3" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer flex items-center gap-1">
+              <span>Q3</span><span id="tab7-badge-3" class="text-[10px] opacity-80">(0/6)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-1 bg-fuchsia-50/70 border border-fuchsia-200 rounded-lg p-1.5 shrink-0">
+          <div class="flex items-center justify-between text-[10px] text-fuchsia-900 font-bold uppercase">
+            <span id="tab7-q-category">Topic</span>
+            <span class="bg-fuchsia-200 text-fuchsia-900 px-1.5 py-0.5 rounded font-mono">[MAX 6 MARKS]</span>
+          </div>
+          <p id="tab7-prompt-text" class="text-xs font-bold text-slate-900 mt-0.5 leading-snug"></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow overflow-hidden items-stretch">
+          <div class="lg:col-span-6 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium mb-0.5">
+              <span>Your Written Answer:</span>
+              <div class="flex items-center gap-1.5">
+                <span id="tab7-current-mark-display" class="font-mono bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 px-1.5 py-0.5 rounded font-bold">Mark: 0 / 6</span>
+                <span id="tab7-word-count" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">0 words</span>
+              </div>
+            </div>
+            <textarea id="tab7-student-answer" oninput="analyzeTab7Text()" placeholder="Type your extended biological response here using precise terminology..." class="w-full flex-grow p-2 rounded-lg border border-slate-300 focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-100 text-xs font-sans leading-relaxed outline-none transition bg-white resize-none"></textarea>
+            
+            <div class="flex items-center justify-between gap-1 mt-1 pt-1 border-t border-slate-100 shrink-0">
+              <div class="flex items-center space-x-1.5">
+                <button onclick="evaluateAndShowModels()" class="px-2.5 py-1 bg-fuchsia-600 hover:bg-fuchsia-700 text-white rounded text-xs font-bold transition shadow-xs cursor-pointer">⚡ Grade Question</button>
+                <button id="tab7-honesty-btn" onclick="applyHonestyBonus()" class="hidden px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded text-xs font-bold transition shadow-xs cursor-pointer">🎁 +1 Honesty Bonus</button>
+              </div>
+              <span class="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                Terms matched: <span id="tab7-matched-terms-count" class="font-bold text-fuchsia-600">0</span> / <span id="tab7-total-terms-count">8</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6 flex flex-col justify-between bg-slate-50 rounded-xl p-2 border border-slate-200 overflow-hidden">
+            <div class="shrink-0">
+              <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+                <span class="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Key Terminology Tracker</span>
+                <span id="tab7-predicted-level" class="text-[10px] font-bold text-slate-500">Predicted: Start typing</span>
+              </div>
+              <div id="tab7-keywords-chips" class="flex flex-wrap gap-1 mt-1"></div>
+            </div>
+
+            <div id="tab7-models-section" class="flex-grow mt-1.5 pt-1 border-t border-slate-200 hidden flex flex-col justify-between overflow-y-auto pr-1 space-y-1">
+              <div class="rounded-lg border border-emerald-300 bg-emerald-50/70 p-1.5 text-[11px]">
+                <div class="flex items-center justify-between font-bold text-emerald-900">
+                  <span>High-Level Foundation Answer (5–6 Marks)</span>
+                  <span class="bg-emerald-600 text-white px-1 py-0.5 rounded text-[9px]">6/6</span>
+                </div>
+                <p id="model-high-text" class="text-slate-800 mt-0.5 leading-snug text-[10px]"></p>
+                <p class="text-[9px] text-emerald-950 font-semibold mt-0.5"><strong>Commentary:</strong> <span id="model-high-commentary"></span></p>
+              </div>
+              <div class="rounded-lg border border-sky-300 bg-sky-50/70 p-1.5 text-[11px]">
+                <div class="flex items-center justify-between font-bold text-sky-900">
+                  <span>Medium-Level Foundation Answer (3–4 Marks)</span>
+                  <span class="bg-sky-600 text-white px-1 py-0.5 rounded text-[9px]">4/6</span>
+                </div>
+                <p id="model-med-text" class="text-slate-800 mt-0.5 leading-snug text-[10px]"></p>
+                <p class="text-[9px] text-sky-950 font-semibold mt-0.5"><strong>Commentary:</strong> <span id="model-med-commentary"></span></p>
+              </div>
+              <div class="rounded-lg border border-amber-300 bg-amber-50/70 p-1.5 text-[11px]">
+                <div class="flex items-center justify-between font-bold text-amber-900">
+                  <span>Low-Level Foundation Answer (1–2 Marks)</span>
+                  <span class="bg-amber-600 text-white px-1 py-0.5 rounded text-[9px]">2/6</span>
+                </div>
+                <p id="model-low-text" class="text-slate-800 mt-0.5 leading-snug text-[10px]"></p>
+                <p class="text-[9px] text-amber-950 font-semibold mt-0.5"><strong>Commentary:</strong> <span id="model-low-commentary"></span></p>
+              </div>
+            </div>
+            
+            <div id="tab7-models-placeholder" class="flex-grow flex items-center justify-center text-center p-3 text-slate-400 text-xs">
+              Type your response and click "Grade" to see examiner model answers.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- SCREENSHOT SCORECARD POPUP MODAL                         -->
+  <!-- ======================================================== -->
+  <div id="scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 hidden">
+    <div id="score-modal-content" class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl border border-slate-200 text-slate-800 space-y-3">
+      
+      <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-violet-500/20 text-violet-600 font-bold flex items-center justify-center text-sm border border-violet-500/30">📊</div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">Official Revision Scorecard</h3>
+            <p class="text-[11px] text-violet-700 font-semibold">AQA GCSE Biology Foundation • Homeostasis</p>
+          </div>
+        </div>
+        <button onclick="closeScorecardModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2 py-0.5 rounded cursor-pointer">✕</button>
+      </div>
+
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-medium">Candidate Name:</span>
+          <span id="scorecard-display-name" class="font-bold text-slate-900 text-sm bg-white px-2 py-0.5 rounded border border-slate-300">Candidate</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-slate-500 font-medium">Date & Timestamp:</span>
+          <span id="scorecard-timestamp" class="font-mono font-semibold text-slate-800"></span>
+        </div>
+      </div>
+
+      <div class="border rounded-xl overflow-hidden text-xs">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 font-bold border-b text-[11px]">
+              <th class="p-2">Revision Activity</th>
+              <th class="p-2 text-center">Marks</th>
+              <th class="p-2 text-right">Max</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-[11px]" id="scorecard-table-body"></tbody>
+          <tfoot>
+            <tr class="bg-violet-50 text-violet-950 font-bold border-t border-violet-200 text-xs">
+              <td class="p-2">Cumulative Total</td>
+              <td class="p-2 text-center font-mono font-bold text-violet-800" id="scorecard-total-marks">0</td>
+              <td class="p-2 text-right font-mono" id="scorecard-max-marks">72</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="p-2 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-between text-xs">
+        <div>
+          <span class="text-sky-900 font-bold block text-[11px]">Overall Mastery Score:</span>
+          <span id="scorecard-grade-descriptor" class="text-sky-700 text-[10px]">Great effort</span>
+        </div>
+        <span id="scorecard-percentage" class="text-base font-black text-sky-700 font-mono">0%</span>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+        <button onclick="promptEditName()" class="text-sky-600 hover:text-sky-800 font-semibold text-[11px] cursor-pointer">✏️ Change Name</button>
+        <div class="flex items-center gap-1.5">
+          <button onclick="window.print()" class="px-3 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition flex items-center gap-1 text-xs cursor-pointer"><span>🖨 Print / Save PDF</span></button>
+          <button onclick="closeScorecardModal()" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition text-xs cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTabId = 'tab1';
+    let studentCandidateName = "";
+    let currentStreak = 0;
+
+    function dismissSplashScreen() {
+      const splash = document.getElementById('splash-screen');
+      splash.style.opacity = '0';
+      splash.style.transform = 'scale(1.05)';
+      splash.style.pointerEvents = 'none';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        showToast("Welcome to Homeostasis! Let's get started. 🧬", "bg-fuchsia-600");
+      }, 700);
+    }
+
+    function updateStreakDisplay() {
+      const streakEl = document.getElementById('top-streak-display');
+      const valEl = document.getElementById('streak-counter-val');
+      if (!streakEl || !valEl) return;
+      if (currentStreak >= 2) {
+        streakEl.classList.remove('hidden');
+        setTimeout(() => { streakEl.classList.remove('scale-95', 'opacity-0'); streakEl.classList.add('scale-100', 'opacity-100'); }, 10);
+        valEl.textContent = currentStreak;
+        streakEl.classList.remove('animate-pulse');
+        void streakEl.offsetWidth; 
+        streakEl.classList.add('animate-pulse');
+      } else {
+        streakEl.classList.remove('scale-100', 'opacity-100', 'animate-pulse');
+        streakEl.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { if (currentStreak < 2) streakEl.classList.add('hidden'); }, 300);
+      }
+    }
+
+    function triggerFeedback(type) {
+      if (type === 'complete' && typeof confetti === 'function') {
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+      }
+    }
+
+    function switchTab(tabId) {
+      currentTabId = tabId;
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-violet-400', 'text-violet-300', 'bg-slate-800/80', 'font-bold');
+        btn.classList.add('border-transparent');
+      });
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.remove('hidden');
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) {
+        btn.classList.add('border-violet-400', 'text-violet-300', 'bg-slate-800/80', 'font-bold');
+        btn.classList.remove('border-transparent');
+      }
+    }
+
+    function showToast(msg, bg = 'bg-violet-600') {
+      const prev = document.getElementById('app-floating-toast');
+      if (prev) prev.remove();
+      const toast = document.createElement('div');
+      toast.id = 'app-floating-toast';
+      toast.className = `fixed bottom-3 right-3 z-50 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg transition-all duration-300 ${bg}`;
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 250);
+      }, 2000);
+    }
+
+    function promptAndOpenScorecard() {
+      const entered = window.prompt("Enter candidate name for scorecard:", studentCandidateName || "");
+      if (entered !== null) {
+        studentCandidateName = entered.trim().length > 0 ? entered.trim() : "Biology Foundation Candidate";
+        openScorecardModal();
+      }
+    }
+
+    function promptEditName() {
+      const entered = window.prompt("Update candidate name:", studentCandidateName);
+      if (entered && entered.trim().length > 0) {
+        studentCandidateName = entered.trim();
+        document.getElementById('scorecard-display-name').textContent = studentCandidateName;
+      }
+    }
+
+    function openScorecardModal() {
+      document.getElementById('scorecard-display-name').textContent = studentCandidateName || "Biology Foundation Candidate";
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+      const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('scorecard-timestamp').textContent = `${dateStr}, ${timeStr}`;
+
+      const s1 = tab1Matches.filter(m => m.isCorrect).length;
+      const s2 = tab2Score;
+      const s3 = tab3Glands.filter(g => g.placed).length;
+      let s4 = 0; Object.keys(userMCQAnswers).forEach(idx => { if (userMCQAnswers[idx] === mcq20Data[idx].ans) s4++; });
+      const s5 = tab5Matches.filter(m => m.isCorrect).length;
+      const s6 = tab6Matches.filter(m => m.isCorrect).length;
+      const s7 = (tab7Scores[1] || 0) + (tab7Scores[2] || 0) + (tab7Scores[3] || 0);
+
+      const total = s1 + s2 + s3 + s4 + s5 + s6 + s7;
+      const maxTotal = 8 + 8 + 6 + 20 + 6 + 6 + 18;
+
+      const rows = [
+        { name: "1: Control Systems Matcher", score: s1, max: 8 },
+        { name: "2: Reflex Arc Order", score: s2, max: 8 },
+        { name: "3: Endocrine Glands Label", score: s3, max: 6 },
+        { name: "4: 20 MCQ Homeostasis Quiz", score: s4, max: 20 },
+        { name: "5: Blood Glucose Matcher", score: s5, max: 6 },
+        { name: "6: Menstrual Cycle Matcher", score: s6, max: 6 },
+        { name: "7: 3x AQA 6-Markers (Essays)", score: s7, max: 18 }
+      ];
+
+      const tbody = document.getElementById('scorecard-table-body');
+      tbody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50";
+        tr.innerHTML = `<td class="p-1.5 text-slate-800">${r.name}</td><td class="p-1.5 text-center font-mono font-bold text-sky-700">${r.score}</td><td class="p-1.5 text-right font-mono text-slate-500">${r.max}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('scorecard-total-marks').textContent = total;
+      document.getElementById('scorecard-max-marks').textContent = maxTotal;
+      const pct = Math.round((total / maxTotal) * 100);
+      document.getElementById('scorecard-percentage').textContent = `${pct}%`;
+      const desc = document.getElementById('scorecard-grade-descriptor');
+      if (pct >= 80) desc.textContent = "🌟 Grade 5 Standard - Outstanding Foundation mastery!";
+      else if (pct >= 65) desc.textContent = "👍 Grade 4 Standard - Strong factual recall.";
+      else if (pct >= 50) desc.textContent = "⚖️ Grade 3 Standard - Solid baseline knowledge.";
+      else desc.textContent = "⚠️ Review Needed - Revisit the basic definitions!";
+      document.getElementById('scorecard-modal').classList.remove('hidden');
+    }
+
+    function closeScorecardModal() {
+      document.getElementById('scorecard-modal').classList.add('hidden');
+    }
+
+    const tab1Data = [
+      { id: '1', term: "Homeostasis", def: "Maintaining a constant internal environment for enzymes to function." },
+      { id: '2', term: "Stimulus", def: "A change in your environment (e.g., a drop in temperature or bright light)." },
+      { id: '3', term: "Receptor", def: "Specialised cells that detect a stimulus (e.g., in the skin or eyes)." },
+      { id: '4', term: "Coordination Centre", def: "Receives and processes information (e.g., Brain, Spinal Cord, or Pancreas)." },
+      { id: '5', term: "Effector", def: "A muscle or a gland that brings about a response." },
+      { id: '6', term: "Response", def: "The action taken by the body to restore optimum conditions." },
+      { id: '7', term: "Nervous System", def: "Uses fast electrical impulses travelling along neurones." },
+      { id: '8', term: "Endocrine System", def: "Uses slower chemical messengers (hormones) travelling in the blood." }
+    ];
+
+    let tab1Matches = tab1Data.map(t => ({ propId: t.id, isCorrect: false }));
+    let selectedTab1TermId = null;
+    let shuffledTab1Terms = [...tab1Data];
+    let shuffledTab1Defs = [...tab1Data];
+
+    function renderTab1() {
+      const bank = document.getElementById('tab1-terms-bank');
+      const defsContainer = document.getElementById('tab1-defs-container');
+      if (!bank || !defsContainer) return;
+
+      bank.innerHTML = '';
+      let remainingPairs = 0;
+      shuffledTab1Terms.forEach(item => {
+        const matchState = tab1Matches.find(m => m.propId === item.id);
+        if (matchState.isCorrect) return; 
+
+        remainingPairs++;
+        const isSelected = selectedTab1TermId === item.id;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectTab1Term(item.id);
+        let style = isSelected ? "bg-sky-100 border-sky-400 text-sky-900 ring-2 ring-sky-300 font-bold" : "bg-white border-slate-200 text-slate-800 hover:border-sky-300";
+        btn.className = `w-full text-left p-2.5 rounded-xl border text-xs sm:text-sm transition cursor-pointer shadow-sm ${style}`;
+        btn.innerHTML = `<span>${item.term}</span>`;
+        bank.appendChild(btn);
+      });
+
+      defsContainer.innerHTML = '';
+      shuffledTab1Defs.forEach(item => {
+        const matchState = tab1Matches.find(m => m.propId === item.id);
+        if (matchState.isCorrect) return; 
+
+        const card = document.createElement('div');
+        card.onclick = () => matchTab1Def(item.id);
+        card.className = `p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-slate-50 text-xs sm:text-sm text-slate-700 transition cursor-pointer shadow-sm`;
+        card.innerHTML = `<span class="leading-relaxed block">${item.def}</span>`;
+        defsContainer.appendChild(card);
+      });
+
+      document.getElementById('tab1-score').textContent = tab1Matches.filter(m => m.isCorrect).length;
+      const status = document.getElementById('tab1-selection-status');
+      if (status) {
+        if (selectedTab1TermId) {
+          const termObj = tab1Data.find(p => p.id === selectedTab1TermId);
+          status.textContent = `Selected: "${termObj ? termObj.term : ''}" - Click matching definition!`;
+          status.className = "text-[10px] text-sky-800 font-bold bg-sky-50 p-1.5 rounded border border-sky-300 text-center leading-tight mt-1 shrink-0";
+        } else {
+          status.textContent = "Tap a key term, then tap its definition. Correct matches will vanish!";
+          status.className = "text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0";
+        }
+      }
+      if (remainingPairs === 0) {
+        defsContainer.innerHTML = `<div class="absolute inset-0 flex items-center justify-center p-6 text-center bg-emerald-50 rounded-xl border border-emerald-200 animate-fade-in"><div class="space-y-2"><span class="text-4xl block">🏆</span><h3 class="text-lg font-bold text-emerald-800">All terms matched!</h3><p class="text-sm text-emerald-600">Perfect 8/8 marks achieved.</p></div></div>`;
+      }
+    }
+
+    function selectTab1Term(id) { selectedTab1TermId = (selectedTab1TermId === id) ? null : id; renderTab1(); }
+
+    function matchTab1Def(defId) {
+      if (!selectedTab1TermId) return showToast("Select a key term from the left first!", "bg-slate-700");
+      const isCorrect = (selectedTab1TermId === defId);
+      selectedTab1TermId = null; 
+      if (isCorrect) {
+        tab1Matches.find(m => m.propId === defId).isCorrect = true;
+        renderTab1();
+        currentStreak++; updateStreakDisplay();
+        if (tab1Matches.filter(m => m.isCorrect).length === 8) {
+            triggerFeedback('complete'); showToast(`Fantastic! Activity 1 Complete! 🏆`, "bg-amber-500 text-slate-900");
+        } else showToast(`Correct Match!`, "bg-emerald-600");
+      } else {
+        renderTab1();
+        currentStreak = 0; updateStreakDisplay(); 
+        showToast("Incorrect match. Try again!", "bg-rose-600");
+      }
+    }
+
+    function resetTab1() {
+      currentStreak = 0; updateStreakDisplay();
+      tab1Matches.forEach(m => m.isCorrect = false);
+      shuffledTab1Terms.sort(() => Math.random() - 0.5);
+      shuffledTab1Defs.sort(() => Math.random() - 0.5);
+      selectedTab1TermId = null;
+      renderTab1();
+      showToast("Activity 1 reset!", "bg-slate-700");
+    }
+
+    let touchDragSourceList = null; let touchDragSourceIndex = -1; let touchDragOverIndex = -1;
+    function initTouchDrag(element, listType, index) {
+      element.addEventListener('touchstart', (e) => { touchDragSourceList = listType; touchDragSourceIndex = index; touchDragOverIndex = index; e.currentTarget.classList.add('dragging-card'); }, { passive: false });
+      element.addEventListener('touchmove', (e) => { if (touchDragSourceList !== listType) return; e.preventDefault(); const touch = e.touches[0]; const elemUnder = document.elementFromPoint(touch.clientX, touch.clientY); if (!elemUnder) return; const card = elemUnder.closest('[data-drag-index]'); if (card && card.dataset.listType === listType) touchDragOverIndex = parseInt(card.dataset.dragIndex, 10); }, { passive: false });
+      element.addEventListener('touchend', (e) => { e.currentTarget.classList.remove('dragging-card'); if (touchDragSourceList === listType && touchDragOverIndex !== -1 && touchDragSourceIndex !== -1 && touchDragSourceIndex !== touchDragOverIndex) reorderArrayItems(listType, touchDragSourceIndex, touchDragOverIndex); touchDragSourceList = null; touchDragSourceIndex = -1; touchDragOverIndex = -1; }, { passive: false });
+      element.setAttribute('draggable', 'true');
+      element.addEventListener('dragstart', (e) => { touchDragSourceList = listType; touchDragSourceIndex = index; e.dataTransfer.effectAllowed = 'move'; element.classList.add('dragging-card'); });
+      element.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+      element.addEventListener('drop', (e) => { e.preventDefault(); if (touchDragSourceList === listType && touchDragSourceIndex !== index) reorderArrayItems(listType, touchDragSourceIndex, index); });
+      element.addEventListener('dragend', () => { element.classList.remove('dragging-card'); touchDragSourceList = null; touchDragSourceIndex = -1; });
+    }
+    function reorderArrayItems(listType, fromIdx, toIdx) {
+      if (listType === 'reflex') {
+        const item = currentReflexList.splice(fromIdx, 1)[0];
+        currentReflexList.splice(toIdx, 0, item);
+        renderReflexSequence();
+      }
+    }
+
+    const reflexSteps = [
+      { order: 1, text: "Stimulus: You accidentally touch a hot pan." },
+      { order: 2, text: "Receptor: Temperature receptors in the skin detect the heat." },
+      { order: 3, text: "Sensory Neurone: Carries an electrical impulse to the spinal cord." },
+      { order: 4, text: "Synapse: A chemical diffuses across the gap to the relay neurone." },
+      { order: 5, text: "Relay Neurone: Carries the electrical impulse through the central nervous system." },
+      { order: 6, text: "Motor Neurone: Carries the impulse away from the CNS to the arm." },
+      { order: 7, text: "Effector: The arm muscle contracts." },
+      { order: 8, text: "Response: Your hand pulls away quickly from the hot pan." }
+    ];
+    let currentReflexList = [...reflexSteps];
+    let tab2Score = 0;
+
+    function shuffleReflex() { for (let i = currentReflexList.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [currentReflexList[i], currentReflexList[j]] = [currentReflexList[j], currentReflexList[i]]; } }
+    
+    function renderReflexSequence() {
+      const container = document.getElementById('reflex-sentences-list');
+      if (!container) return; container.innerHTML = '';
+      currentReflexList.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = "px-3 py-2 sm:py-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs flex items-center justify-between gap-2 text-xs flex-grow touch-draggable transition-transform";
+        row.dataset.dragIndex = idx; row.dataset.listType = 'reflex';
+        row.innerHTML = `<div class="flex items-center gap-2 flex-grow pointer-events-none"><span class="w-6 h-6 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-800 font-bold flex items-center justify-center shrink-0 text-xs">☰</span><p class="text-slate-800 font-medium leading-relaxed">${item.text}</p></div><div class="flex flex-col gap-0.5 shrink-0 opacity-40 hover:opacity-100 ml-1"><button onclick="moveReflexItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="w-6 h-4 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center cursor-pointer">▲</button><button onclick="moveReflexItem(${idx}, 1)" ${idx === currentReflexList.length - 1 ? 'disabled' : ''} class="w-6 h-4 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[9px] flex items-center justify-center cursor-pointer">▼</button></div>`;
+        initTouchDrag(row, 'reflex', idx); container.appendChild(row);
+      });
+    }
+    
+    function moveReflexItem(idx, dir) { const target = idx + dir; if (target < 0 || target >= currentReflexList.length) return; const tmp = currentReflexList[idx]; currentReflexList[idx] = currentReflexList[target]; currentReflexList[target] = tmp; renderReflexSequence(); }
+
+    function checkReflexOrder() {
+      let correctCount = 0;
+      for (let i = 0; i < currentReflexList.length; i++) { if (currentReflexList[i].order === i + 1) correctCount++; }
+      tab2Score = correctCount; document.getElementById('tab2-score').textContent = tab2Score;
+      const fb = document.getElementById('reflex-feedback-banner'); fb.classList.remove('hidden');
+      if (correctCount === 8) { triggerFeedback('complete'); fb.className = "mt-1 p-1.5 rounded-lg text-xs font-bold border border-emerald-300 bg-emerald-50 text-emerald-900"; fb.innerHTML = "🎉 Excellent! The reflex arc is in the correct order (+8 Marks)!"; showToast("Correct! +8 Marks", "bg-emerald-600"); } 
+      else { fb.className = "mt-1 p-1.5 rounded-lg text-xs font-bold border border-amber-300 bg-amber-50 text-amber-900"; fb.innerHTML = `⚠️ ${correctCount}/8 steps correct. Remember: Stimulus -> Receptor -> Neurones -> Effector.`; showToast("Adjust order!", "bg-amber-600"); }
+    }
+    function resetReflexOrder() { shuffleReflex(); document.getElementById('reflex-feedback-banner').classList.add('hidden'); tab2Score = 0; document.getElementById('tab2-score').textContent = 0; renderReflexSequence(); showToast("Steps shuffled!", "bg-slate-700"); }
+
+    const tab3Glands = [
+      { id: 'A', name: "Pituitary Gland (Master Gland)", placed: false },
+      { id: 'B', name: "Thyroid Gland", placed: false },
+      { id: 'C', name: "Adrenal Glands", placed: false },
+      { id: 'D', name: "Pancreas", placed: false },
+      { id: 'E', name: "Ovaries (Female)", placed: false },
+      { id: 'F', name: "Testes (Male)", placed: false }
+    ];
+    let selectedTab3GlandId = null;
+
+    function renderTab3() {
+      const bank = document.getElementById('tab3-glands-bank');
+      if (!bank) return; bank.innerHTML = '';
+      tab3Glands.forEach(lbl => {
+        const btn = document.createElement('button');
+        btn.onclick = () => selectTab3Gland(lbl.id);
+        let style = "bg-white border-slate-200 text-slate-800 hover:border-violet-400";
+        let statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-mono font-bold">Unmatched</span>`;
+        if (lbl.placed) { style = "bg-emerald-50 border-emerald-300 text-emerald-950 font-semibold"; statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono font-bold">✓ Pin ${lbl.id}</span>`; }
+        else if (selectedTab3GlandId === lbl.id) { style = "bg-amber-50 border-amber-400 text-amber-950 ring-2 ring-amber-300 font-semibold"; statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-mono font-black animate-pulse">Selected</span>`; }
+        btn.className = `w-full text-left p-2 rounded-lg border text-xs flex items-center justify-between gap-1.5 transition cursor-pointer shadow-2xs ${style}`;
+        btn.innerHTML = `<span class="text-[11px] leading-tight flex-grow">${lbl.name}</span><div class="shrink-0">${statusBadge}</div>`;
+        bank.appendChild(btn);
+      });
+      ['A', 'B', 'C', 'D', 'E', 'F'].forEach(pinKey => {
+        const circ = document.getElementById(`t3circ-${pinKey}`);
+        const txt = document.getElementById(`t3txt-${pinKey}`);
+        const item = tab3Glands.find(l => l.id === pinKey);
+        if (circ && txt) {
+          if (item && item.placed) { circ.setAttribute('fill', '#059669'); circ.setAttribute('stroke', '#34d399'); circ.setAttribute('stroke-dasharray', 'none'); txt.setAttribute('fill', '#ffffff'); } 
+          else { circ.setAttribute('fill', '#1e293b'); circ.setAttribute('stroke', '#94a3b8'); circ.setAttribute('stroke-dasharray', '3,3'); txt.setAttribute('fill', '#f8fafc'); }
+        }
+      });
+      document.getElementById('tab3-score').textContent = tab3Glands.filter(l => l.placed).length;
+      const status = document.getElementById('tab3-selection-status');
+      if (status) {
+        if (selectedTab3GlandId) { status.textContent = `● Selected gland - Now tap matching pin!`; status.className = "text-amber-500 font-bold"; } 
+        else { status.textContent = "● Tap a gland on right, then tap letter circle A–F"; status.className = "text-violet-400 font-semibold"; }
+      }
+    }
+
+    function selectTab3Gland(id) {
+      if (tab3Glands.find(l => l.id === id).placed) return showToast("Already placed!", "bg-slate-700");
+      selectedTab3GlandId = (selectedTab3GlandId === id) ? null : id; renderTab3();
+    }
+
+    function handleTab3PinClick(pinId) {
+      if (!selectedTab3GlandId) return showToast(`Tap a gland label first!`, "bg-slate-700");
+      if (selectedTab3GlandId === pinId) {
+        tab3Glands.find(l => l.id === pinId).placed = true;
+        selectedTab3GlandId = null; renderTab3();
+        currentStreak++; updateStreakDisplay();
+        if (tab3Glands.filter(l => l.placed).length === 6) { triggerFeedback('complete'); showToast(`Awesome! Activity 3 Complete! 🏆`, "bg-amber-500 text-slate-900"); }
+      } else {
+        currentStreak = 0; updateStreakDisplay(); showToast(`Incorrect pin.`, "bg-rose-600");
+      }
+    }
+    function resetTab3() { currentStreak = 0; updateStreakDisplay(); tab3Glands.forEach(l => l.placed = false); tab3Glands.sort(() => Math.random() - 0.5); selectedTab3GlandId = null; renderTab3(); showToast("Activity 3 reset!", "bg-slate-700"); }
+
+    const mcq20Data = [
+      { q: "What is the definition of homeostasis?", options: ["Changing your internal environment to match the outside", "Maintaining a constant internal environment", "Filtering the blood in the kidneys", "Releasing hormones into the bloodstream"], ans: 1, rationale: "Homeostasis keeps your body's internal conditions (like temperature and blood sugar) steady so cells work properly." },
+      { q: "Why is it important to keep internal body conditions constant?", options: ["To stop you from feeling hungry", "To make sure enzymes can work properly", "To keep your blood pressure high", "To stop the heart from beating too fast"], ans: 1, rationale: "Enzymes need specific conditions (like 37°C) to function. If it's too hot or cold, they might stop working." },
+      { q: "In a control system, what is a 'stimulus'?", options: ["A muscle contracting", "The brain making a decision", "A change in the environment, like a drop in temperature", "A chemical messenger"], ans: 2, rationale: "A stimulus is anything that causes a reaction, such as a sudden bright light or touching something hot." },
+      { q: "Which part of the body detects a stimulus?", options: ["Effectors", "Coordination centres", "Receptors", "Hormones"], ans: 2, rationale: "Receptors (like light receptors in the eyes or temperature receptors in the skin) detect changes." },
+      { q: "What acts as the 'coordination centre' in the nervous system?", options: ["The muscles", "The brain and spinal cord", "The skin", "The glands"], ans: 1, rationale: "The brain and spinal cord (the Central Nervous System) receive information from receptors and decide what to do." },
+      { q: "What is an 'effector'?", options: ["A muscle or gland that carries out a response", "A nerve cell that carries electrical signals", "A sense organ like the eye", "A hormone that travels in the blood"], ans: 0, rationale: "Effectors actually 'effect' the change. Muscles contract, and glands release chemicals." },
+      { q: "How do signals travel along neurones (nerve cells)?", options: ["As chemical hormones in the blood", "As sound waves", "As fast electrical impulses", "By diffusion through tissue fluid"], ans: 2, rationale: "The nervous system uses fast electrical impulses travelling along neurones for quick responses." },
+      { q: "What is a reflex action?", options: ["A slow, conscious decision to move", "An automatic and rapid response that does not involve the conscious part of the brain", "A hormonal response to high blood sugar", "The process of food digestion"], ans: 1, rationale: "Reflexes are automatic and bypass the conscious brain to protect you from harm quickly." },
+      { q: "What is the small gap between two neurones called?", options: ["A synapse", "A receptor", "A sensory gap", "An effector"], ans: 0, rationale: "The gap is called a synapse. Electrical signals cannot jump it directly." },
+      { q: "How does a signal get across a synapse?", options: ["An electrical spark jumps across", "Chemicals diffuse across the gap and start a new electrical impulse", "The two neurones stretch to touch each other", "Blood carries the signal across"], ans: 1, rationale: "Chemicals (neurotransmitters) are released, diffuse across the small gap, and trigger the next neurone." },
+      { q: "Which system uses chemical messengers called hormones?", options: ["The Nervous System", "The Digestive System", "The Endocrine System", "The Respiratory System"], ans: 2, rationale: "The Endocrine system consists of glands that release hormones into the bloodstream." },
+      { q: "How are hormones transported around the body?", options: ["In the blood", "Through nerves", "Through the digestive tract", "Through sweat glands"], ans: 0, rationale: "Hormones are secreted directly into the blood by glands and carried to target organs." },
+      { q: "Which gland monitors and controls blood glucose levels?", options: ["The Thyroid", "The Pituitary Gland", "The Pancreas", "The Adrenal Gland"], ans: 2, rationale: "The pancreas constantly checks blood glucose and releases insulin if it gets too high." },
+      { q: "What hormone is released when blood glucose is too high?", options: ["Adrenaline", "Insulin", "Testosterone", "Oestrogen"], ans: 1, rationale: "Insulin helps cells take in glucose from the blood, lowering the blood sugar level." },
+      { q: "What happens to excess glucose when insulin is released?", options: ["It is breathed out as carbon dioxide", "It is converted into glycogen and stored in the liver and muscles", "It is turned into urea", "It is sweated out through the skin"], ans: 1, rationale: "The liver converts the extra soluble glucose into insoluble glycogen for storage." },
+      { q: "What is the main cause of Type 1 diabetes?", options: ["Eating too much sugar", "The body cells stop responding to insulin", "The pancreas fails to produce enough insulin", "A lack of exercise"], ans: 2, rationale: "In Type 1 diabetes, the pancreas does not produce insulin, so blood glucose can rise to dangerous levels." },
+      { q: "How is Type 1 diabetes normally treated?", options: ["With a carbohydrate-free diet", "By taking a pill to cure the pancreas", "With insulin injections", "By drinking more water"], ans: 2, rationale: "Because the body cannot make insulin, it must be injected, usually before meals." },
+      { q: "Which hormone causes an egg to mature in the ovary?", options: ["FSH", "LH", "Oestrogen", "Testosterone"], ans: 0, rationale: "FSH (Follicle Stimulating Hormone) causes an egg to mature in the female ovaries." },
+      { q: "Which hormone stimulates the release of a mature egg (ovulation)?", options: ["FSH", "Progesterone", "Insulin", "LH"], ans: 3, rationale: "LH (Luteinising Hormone) peaks in the middle of the cycle, triggering the release of the egg." },
+      { q: "Which is an example of a barrier method of contraception?", options: ["The oral contraceptive pill", "An intrauterine device (IUD)", "A condom", "A contraceptive implant"], ans: 2, rationale: "A condom provides a physical barrier preventing sperm from reaching the egg. It also protects against STIs." }
+    ];
+
+    let userMCQAnswers = {}; let activeMCQIndices = Array.from({ length: 20 }, (_, i) => i); let currentActivePointer = 0; let isMCQTransitioning = false;
+
+    function renderMCQ20() {
+      const card = document.getElementById('tab4-single-card');
+      const summary = document.getElementById('tab4-summary');
+      if (currentActivePointer >= activeMCQIndices.length) return showMCQSummary();
+
+      card.classList.remove('hidden'); summary.classList.add('hidden');
+      const qIndex = activeMCQIndices[currentActivePointer];
+      const qData = mcq20Data[qIndex];
+      const answered = userMCQAnswers[qIndex] !== undefined;
+      const userChoice = userMCQAnswers[qIndex];
+
+      document.getElementById('tab4-current-q-num').textContent = currentActivePointer + 1;
+      document.getElementById('tab4-total-q-num').textContent = activeMCQIndices.length;
+      document.getElementById('tab4-progress-bar').style.width = `${((currentActivePointer + 1) / activeMCQIndices.length) * 100}%`;
+
+      let scoreCount = 0; Object.keys(userMCQAnswers).forEach(k => { if (userMCQAnswers[k] === mcq20Data[k].ans) scoreCount++; });
+      document.getElementById('tab4-score').textContent = scoreCount;
+
+      let optionsHTML = '';
+      qData.options.forEach((opt, oIdx) => {
+        let optStyle = "border-slate-200 bg-white hover:bg-violet-50 hover:border-violet-300";
+        let letterBadge = `<span class="w-5 h-5 rounded bg-slate-100 text-slate-700 font-mono font-bold flex items-center justify-center shrink-0 text-xs">${String.fromCharCode(65 + oIdx)}</span>`;
+        if (answered) {
+          if (oIdx === qData.ans) { optStyle = "border-emerald-400 bg-emerald-50 text-emerald-950 font-bold ring-2 ring-emerald-300"; letterBadge = `<span class="w-5 h-5 rounded bg-emerald-600 text-white font-mono font-bold flex items-center justify-center">✓</span>`; } 
+          else if (oIdx === userChoice) { optStyle = "border-rose-400 bg-rose-50 text-rose-950 font-semibold ring-2 ring-rose-300"; letterBadge = `<span class="w-5 h-5 rounded bg-rose-600 text-white font-mono font-bold flex items-center justify-center">✗</span>`; } 
+          else { optStyle = "border-slate-200 bg-slate-50 text-slate-400 opacity-60"; }
+        }
+        optionsHTML += `<button onclick="handleMCQChoice(${oIdx})" ${answered ? 'disabled' : ''} class="w-full text-left p-2.5 rounded-xl border text-xs transition cursor-pointer flex items-center gap-2.5 shadow-2xs ${optStyle}">${letterBadge}<span class="leading-relaxed flex-grow">${opt}</span></button>`;
+      });
+
+      let rationaleHTML = answered ? `<div class="mt-2.5 p-2 rounded-lg text-xs leading-snug border ${userChoice === qData.ans ? 'bg-emerald-50 text-emerald-900 border-emerald-300' : 'bg-rose-50 text-rose-900 border-rose-300'} animate-fade-in"><strong>${userChoice === qData.ans ? '✓ Correct!' : '✗ Incorrect:'}</strong> ${qData.rationale}</div>` : '';
+      card.innerHTML = `<div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col justify-between shadow-xs"><div><span class="text-[10px] font-bold text-violet-800 bg-violet-100 px-2 py-0.5 rounded uppercase">Question ${currentActivePointer + 1}</span><h3 class="text-sm font-bold text-slate-900 mt-2 mb-3">${qData.q}</h3><div class="space-y-2">${optionsHTML}</div></div>${rationaleHTML}</div>`;
+    }
+
+    function handleMCQChoice(oIdx) {
+      if (isMCQTransitioning) return;
+      const qIndex = activeMCQIndices[currentActivePointer];
+      if (userMCQAnswers[qIndex] !== undefined) return;
+      userMCQAnswers[qIndex] = oIdx; isMCQTransitioning = true; renderMCQ20();
+      if (oIdx === mcq20Data[qIndex].ans) currentStreak++; else currentStreak = 0;
+      updateStreakDisplay();
+      setTimeout(() => { currentActivePointer++; isMCQTransitioning = false; renderMCQ20(); }, 1800);
+    }
+
+    function showMCQSummary() {
+      document.getElementById('tab4-single-card').classList.add('hidden');
+      document.getElementById('tab4-summary').classList.remove('hidden');
+      let scoreCount = 0; let missed = [];
+      activeMCQIndices.forEach(idx => { if (userMCQAnswers[idx] === mcq20Data[idx].ans) scoreCount++; else missed.push(idx); });
+      document.getElementById('tab4-final-score').textContent = scoreCount;
+      const feedback = document.getElementById('tab4-summary-feedback');
+      const retestBtn = document.getElementById('btn-retest-missed');
+      
+      if (missed.length > 0) {
+        feedback.textContent = `You scored ${scoreCount}/${activeMCQIndices.length}. Click below to retest the ${missed.length} missed.`;
+        retestBtn.classList.remove('hidden'); document.getElementById('retest-count').textContent = missed.length;
+      } else {
+        feedback.textContent = `Outstanding! Perfect score!`; retestBtn.classList.add('hidden'); triggerFeedback('complete');
+      }
+    }
+
+    function retestMissedQuestions() {
+      const missed = activeMCQIndices.filter(idx => userMCQAnswers[idx] !== mcq20Data[idx].ans);
+      if (!missed.length) return;
+      missed.forEach(idx => delete userMCQAnswers[idx]);
+      activeMCQIndices = missed; currentActivePointer = 0; currentStreak = 0; updateStreakDisplay();
+      document.getElementById('tab4-mode-indicator').textContent = `Retesting ${missed.length} Missed`;
+      renderMCQ20();
+    }
+    function resetMCQ20() { userMCQAnswers = {}; activeMCQIndices = Array.from({ length: 20 }, (_, i) => i); currentActivePointer = 0; currentStreak = 0; updateStreakDisplay(); document.getElementById('tab4-mode-indicator').textContent = "Standard Mode"; renderMCQ20(); showToast("MCQ Quiz reset!", "bg-slate-700"); }
+
+    const tab5Data = [
+      { id: '1', term: "Insulin", def: "A hormone that lowers blood glucose by helping cells take it in." },
+      { id: '2', term: "Glycogen", def: "A storage carbohydrate made from excess glucose, stored in the liver." },
+      { id: '3', term: "Pancreas", def: "The organ that monitors blood glucose and produces insulin." },
+      { id: '4', term: "Type 1 Diabetes", def: "A disorder where the pancreas fails to produce enough insulin." },
+      { id: '5', term: "Type 2 Diabetes", def: "A disorder where the body cells no longer respond to insulin." },
+      { id: '6', term: "Treating Type 1", def: "Usually treated with insulin injections." }
+    ];
+
+    let tab5Matches = tab5Data.map(t => ({ propId: t.id, isCorrect: false }));
+    let selectedTab5TermId = null; let shuffledTab5Terms = [...tab5Data]; let shuffledTab5Defs = [...tab5Data];
+
+    function renderTab5() {
+      const bank = document.getElementById('tab5-concepts-bank'); const defsContainer = document.getElementById('tab5-defs-container');
+      if (!bank || !defsContainer) return; bank.innerHTML = ''; let remainingPairs = 0;
+      
+      shuffledTab5Terms.forEach(item => {
+        if (tab5Matches.find(m => m.propId === item.id).isCorrect) return;
+        remainingPairs++;
+        const btn = document.createElement('button'); btn.onclick = () => { selectedTab5TermId = (selectedTab5TermId === item.id) ? null : item.id; renderTab5(); };
+        let style = (selectedTab5TermId === item.id) ? "bg-emerald-100 border-emerald-400 text-emerald-900 ring-2 ring-emerald-300 font-bold" : "bg-white border-slate-200 text-slate-800 hover:border-emerald-300";
+        btn.className = `w-full text-left p-2.5 rounded-xl border text-xs sm:text-sm transition cursor-pointer shadow-sm ${style}`; btn.innerHTML = `<span>${item.term}</span>`; bank.appendChild(btn);
+      });
+
+      defsContainer.innerHTML = '';
+      shuffledTab5Defs.forEach(item => {
+        if (tab5Matches.find(m => m.propId === item.id).isCorrect) return;
+        const card = document.createElement('div');
+        card.onclick = () => {
+          if (!selectedTab5TermId) return showToast("Select a concept from the left first!", "bg-slate-700");
+          if (selectedTab5TermId === item.id) {
+            tab5Matches.find(m => m.propId === item.id).isCorrect = true; selectedTab5TermId = null; renderTab5(); currentStreak++; updateStreakDisplay();
+            if (tab5Matches.filter(m => m.isCorrect).length === 6) { triggerFeedback('complete'); showToast(`Activity 5 Complete! 🏆`, "bg-amber-500 text-slate-900"); } else showToast(`Correct!`, "bg-emerald-600");
+          } else {
+            selectedTab5TermId = null; renderTab5(); currentStreak = 0; updateStreakDisplay(); showToast("Incorrect match.", "bg-rose-600");
+          }
+        };
+        card.className = `p-3 rounded-xl border border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50 text-xs sm:text-sm text-slate-700 transition cursor-pointer shadow-sm`;
+        card.innerHTML = `<span class="leading-relaxed block">${item.def}</span>`; defsContainer.appendChild(card);
+      });
+
+      document.getElementById('tab5-score').textContent = tab5Matches.filter(m => m.isCorrect).length;
+      const status = document.getElementById('tab5-selection-status');
+      if (status) {
+        if (selectedTab5TermId) { const termObj = tab5Data.find(p => p.id === selectedTab5TermId); status.textContent = `Selected: "${termObj ? termObj.term : ''}" - Click matching description!`; status.className = "text-[10px] text-emerald-800 font-bold bg-emerald-50 p-1.5 rounded border border-emerald-300 text-center leading-tight mt-1 shrink-0"; } 
+        else { status.textContent = "Tap a concept, then its description. Correct matches vanish!"; status.className = "text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0"; }
+      }
+      if (remainingPairs === 0) defsContainer.innerHTML = `<div class="absolute inset-0 flex items-center justify-center p-6 text-center bg-emerald-50 rounded-xl border border-emerald-200 animate-fade-in"><div class="space-y-2"><span class="text-4xl block">🏆</span><h3 class="text-lg font-bold text-emerald-800">All concepts matched!</h3><p class="text-sm text-emerald-600">Perfect 6/6 marks achieved.</p></div></div>`;
+    }
+    function resetTab5() { currentStreak = 0; updateStreakDisplay(); tab5Matches.forEach(m => m.isCorrect = false); shuffledTab5Terms.sort(() => Math.random() - 0.5); shuffledTab5Defs.sort(() => Math.random() - 0.5); selectedTab5TermId = null; renderTab5(); showToast("Activity 5 reset!", "bg-slate-700"); }
+
+    const tab6Data = [
+      { id: '1', term: "FSH", def: "Hormone that causes an egg to mature in the ovary." },
+      { id: '2', term: "Oestrogen", def: "Hormone that causes the uterus lining to thicken and grow." },
+      { id: '3', term: "LH", def: "Hormone that stimulates the release of the egg (ovulation)." },
+      { id: '4', term: "Progesterone", def: "Hormone that maintains the uterus lining, ready for a fertilised egg." },
+      { id: '5', term: "Oral Contraceptive Pill", def: "Hormonal method: Contains hormones to stop eggs maturing." },
+      { id: '6', term: "Condom", def: "Non-hormonal (barrier) method: Prevents sperm reaching the egg." }
+    ];
+
+    let tab6Matches = tab6Data.map(t => ({ propId: t.id, isCorrect: false }));
+    let selectedTab6TermId = null; let shuffledTab6Terms = [...tab6Data]; let shuffledTab6Defs = [...tab6Data];
+
+    function renderTab6() {
+      const bank = document.getElementById('tab6-items-bank'); const defsContainer = document.getElementById('tab6-defs-container');
+      if (!bank || !defsContainer) return; bank.innerHTML = ''; let remainingPairs = 0;
+      
+      shuffledTab6Terms.forEach(item => {
+        if (tab6Matches.find(m => m.propId === item.id).isCorrect) return;
+        remainingPairs++;
+        const btn = document.createElement('button'); btn.onclick = () => { selectedTab6TermId = (selectedTab6TermId === item.id) ? null : item.id; renderTab6(); };
+        let style = (selectedTab6TermId === item.id) ? "bg-pink-100 border-pink-400 text-pink-900 ring-2 ring-pink-300 font-bold" : "bg-white border-slate-200 text-slate-800 hover:border-pink-300";
+        btn.className = `w-full text-left p-2.5 rounded-xl border text-xs sm:text-sm transition cursor-pointer shadow-sm ${style}`; btn.innerHTML = `<span>${item.term}</span>`; bank.appendChild(btn);
+      });
+
+      defsContainer.innerHTML = '';
+      shuffledTab6Defs.forEach(item => {
+        if (tab6Matches.find(m => m.propId === item.id).isCorrect) return;
+        const card = document.createElement('div');
+        card.onclick = () => {
+          if (!selectedTab6TermId) return showToast("Select an item from the left first!", "bg-slate-700");
+          if (selectedTab6TermId === item.id) {
+            tab6Matches.find(m => m.propId === item.id).isCorrect = true; selectedTab6TermId = null; renderTab6(); currentStreak++; updateStreakDisplay();
+            if (tab6Matches.filter(m => m.isCorrect).length === 6) { triggerFeedback('complete'); showToast(`Activity 6 Complete! 🏆`, "bg-amber-500 text-slate-900"); } else showToast(`Correct!`, "bg-pink-600");
+          } else {
+            selectedTab6TermId = null; renderTab6(); currentStreak = 0; updateStreakDisplay(); showToast("Incorrect match.", "bg-rose-600");
+          }
+        };
+        card.className = `p-3 rounded-xl border border-slate-200 bg-white hover:border-pink-300 hover:bg-slate-50 text-xs sm:text-sm text-slate-700 transition cursor-pointer shadow-sm`;
+        card.innerHTML = `<span class="leading-relaxed block">${item.def}</span>`; defsContainer.appendChild(card);
+      });
+
+      document.getElementById('tab6-score').textContent = tab6Matches.filter(m => m.isCorrect).length;
+      const status = document.getElementById('tab6-selection-status');
+      if (status) {
+        if (selectedTab6TermId) { const termObj = tab6Data.find(p => p.id === selectedTab6TermId); status.textContent = `Selected: "${termObj ? termObj.term : ''}" - Click matching description!`; status.className = "text-[10px] text-pink-800 font-bold bg-pink-50 p-1.5 rounded border border-pink-300 text-center leading-tight mt-1 shrink-0"; } 
+        else { status.textContent = "Tap an item, then its function. Correct matches vanish!"; status.className = "text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight mt-1 shrink-0"; }
+      }
+      if (remainingPairs === 0) defsContainer.innerHTML = `<div class="absolute inset-0 flex items-center justify-center p-6 text-center bg-pink-50 rounded-xl border border-pink-200 animate-fade-in"><div class="space-y-2"><span class="text-4xl block">🏆</span><h3 class="text-lg font-bold text-pink-800">All items matched!</h3><p class="text-sm text-pink-600">Perfect 6/6 marks achieved.</p></div></div>`;
+    }
+    function resetTab6() { currentStreak = 0; updateStreakDisplay(); tab6Matches.forEach(m => m.isCorrect = false); shuffledTab6Terms.sort(() => Math.random() - 0.5); shuffledTab6Defs.sort(() => Math.random() - 0.5); selectedTab6TermId = null; renderTab6(); showToast("Activity 6 reset!", "bg-slate-700"); }
+
+    const tab7Questions = {
+      1: {
+        category: "AQA Topic 5 • The Nervous System",
+        prompt: "Describe the pathway of a reflex action when a person accidentally touches a hot pan. [6 marks]",
+        terms: [ { word: "stimulus / hot", regex: /stimulus|hot/i }, { word: "receptor", regex: /receptor/i }, { word: "sensory neurone", regex: /sensory\s+neuron/i }, { word: "synapse / chemical", regex: /synapse|chemical/i }, { word: "relay neurone", regex: /relay\s+neuron/i }, { word: "central nervous system / CNS", regex: /central\s+nervous\s+system|cns|spinal\s+cord/i }, { word: "motor neurone", regex: /motor\s+neuron/i }, { word: "effector / muscle / contract", regex: /effector|muscle|contract/i } ],
+        highModel: "The hot pan acts as a stimulus. This is detected by temperature receptors in the skin. An electrical impulse travels along a sensory neurone to the central nervous system (spinal cord). The impulse reaches a synapse, where a chemical diffuses across the gap and triggers an impulse in a relay neurone. This impulse then travels across another synapse to a motor neurone. The motor neurone carries the impulse to an effector, which is a muscle in the arm. The muscle responds by contracting, pulling the hand away quickly to prevent damage.",
+        highComm: "Clear chronological pathway covering all three neurones, synapses (chemicals diffusing), the CNS, and the effector (muscle contracting). (6/6)",
+        medModel: "When you touch a hot pan, receptors in the skin feel the heat. A signal goes down a sensory neurone to the spinal cord. It then goes to a relay neurone and then to a motor neurone. There are gaps between them called synapses. The signal finally reaches a muscle which contracts to pull your hand away.",
+        medComm: "Good understanding of the neurone order and the muscle contracting, but misses mentioning chemicals crossing the synapse. (4/6)",
+        lowModel: "Your hand feels that the pan is hot. A message goes to your brain and it tells your muscles to move your hand away very fast so you don't get burnt.",
+        lowComm: "Basic understanding. Reflexes generally go through the spinal cord (CNS) without conscious brain thought. Missing key words like receptor and neurones. (2/6)"
+      },
+      2: {
+        category: "AQA Topic 5 • Blood Glucose",
+        prompt: "Compare Type 1 and Type 2 diabetes. Include their causes and how they are treated. [6 marks]",
+        terms: [ { word: "pancreas", regex: /pancreas/i }, { word: "fails to produce insulin (Type 1)", regex: /fails|cannot\s+produce/i }, { word: "cells do not respond (Type 2)", regex: /respond/i }, { word: "insulin injections (Type 1)", regex: /inject/i }, { word: "carbohydrate controlled diet (Type 2)", regex: /diet|carbohydrate/i }, { word: "exercise (Type 2)", regex: /exercise/i }, { word: "high blood glucose", regex: /high(er)?\s+blood\s+glucose|sugar/i }, { word: "obesity / risk factor", regex: /obesity|weight|fat/i } ],
+        highModel: "Both Type 1 and Type 2 diabetes cause a person's blood glucose levels to become dangerously high. In Type 1 diabetes, the pancreas fails to produce enough insulin. This is treated by giving the patient insulin injections, usually before meals. In contrast, in Type 2 diabetes, the pancreas may still make insulin, but the body cells no longer respond to it. Type 2 is strongly linked to the risk factor of obesity. Because insulin injections may not work for Type 2, it is normally treated with a carbohydrate-controlled diet and regular exercise.",
+        highComm: "Explicitly compares the cause of both types (no insulin vs cells not responding) and the different treatments (injections vs diet/exercise). (6/6)",
+        medModel: "Type 1 diabetes is when your body cannot make insulin from the pancreas, so your blood sugar gets too high. You have to treat it with insulin injections. Type 2 diabetes is often caused by being obese. Your body stops reacting to insulin. You treat it by going on a diet and eating less sugar.",
+        medComm: "Strong response, covers the main causes and treatments well. Could be improved by mentioning 'carbohydrate-controlled' diet specifically. (4/6)",
+        lowModel: "Type 1 diabetes means you have too much sugar in your blood and you need to take injections. Type 2 diabetes is when you eat too much bad food and get fat, so you need to diet to get better.",
+        lowComm: "Factual but extremely brief. Does not mention the pancreas, insulin, or body cells failing to respond. (2/6)"
+      },
+      3: {
+        category: "AQA Topic 5 • Reproduction",
+        prompt: "Explain the difference between hormonal and non-hormonal methods of contraception, giving an example of each. [6 marks]",
+        terms: [ { word: "hormonal method", regex: /hormonal/i }, { word: "stops egg maturing / release", regex: /stop|prevent|egg\s+matur|releas/i }, { word: "pill / implant", regex: /pill|implant/i }, { word: "FSH", regex: /fsh/i }, { word: "non-hormonal / barrier", regex: /non-hormonal|barrier/i }, { word: "prevents sperm reaching egg", regex: /sperm|reach/i }, { word: "condom / diaphragm", regex: /condom|diaphragm/i }, { word: "protects against STIs", regex: /sti|disease/i } ],
+        highModel: "Hormonal methods of contraception, such as the oral contraceptive pill or an implant, release hormones like oestrogen or progesterone. These inhibit the production of FSH so that no eggs mature and none are released. Non-hormonal methods are barrier methods, such as a condom. These do not use chemicals to stop the egg, but instead physically prevent the sperm from reaching and fertilising the egg. Furthermore, condoms are the only method of contraception that also protect against sexually transmitted infections (STIs).",
+        highComm: "Perfect breakdown. Clearly defines both mechanisms (inhibiting FSH/egg maturation vs physical barrier) and gives specific examples for both. Notes STI protection. (6/6)",
+        medModel: "Hormonal methods like the pill use hormones to stop a woman's body from releasing an egg. If there is no egg, she cannot get pregnant. Non-hormonal methods like a condom act as a barrier. This stops the sperm from getting inside to meet the egg. Condoms also stop you getting diseases.",
+        medComm: "Good basic explanation and examples. Lacks specific hormone names like FSH or Oestrogen to reach top marks. (4/6)",
+        lowModel: "The pill is a hormonal method that women take every day to stop them getting pregnant. A condom is a non-hormonal method that men wear to stop the sperm. Condoms are better because they stop infections.",
+        lowComm: "Identifies basic examples but does not explain the biological mechanisms (stopping eggs maturing vs physical barrier). (2/6)"
+      }
+    };
+
+    let currentTab7QId = 1; let tab7Answers = { 1: '', 2: '', 3: '' }; let tab7Scores = { 1: 0, 2: 0, 3: 0 }; let tab7Evaluated = { 1: false, 2: false, 3: false };
+
+    function loadTab7Question(qNum) {
+      tab7Answers[currentTab7QId] = document.getElementById('tab7-student-answer').value;
+      currentTab7QId = qNum;
+      [1, 2, 3].forEach(n => {
+        const btn = document.getElementById(`tab7-qbtn-${n}`);
+        if (btn) btn.className = (n === qNum) ? "px-2 py-0.5 rounded text-xs font-bold bg-fuchsia-600 text-white shadow-xs cursor-pointer flex items-center gap-1" : "px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer flex items-center gap-1";
+      });
+      const qData = tab7Questions[qNum];
+      document.getElementById('tab7-q-category').textContent = qData.category; document.getElementById('tab7-prompt-text').textContent = qData.prompt; document.getElementById('tab7-student-answer').value = tab7Answers[qNum] || '';
+      
+      if (tab7Evaluated[qNum]) {
+        document.getElementById('tab7-models-section').classList.remove('hidden'); document.getElementById('tab7-models-placeholder').classList.add('hidden'); document.getElementById('tab7-honesty-btn').classList.remove('hidden');
+        document.getElementById('model-high-text').textContent = qData.highModel; document.getElementById('model-high-commentary').textContent = qData.highComm;
+        document.getElementById('model-med-text').textContent = qData.medModel; document.getElementById('model-med-commentary').textContent = qData.medComm;
+        document.getElementById('model-low-text').textContent = qData.lowModel; document.getElementById('model-low-commentary').textContent = qData.lowComm;
+      } else {
+        document.getElementById('tab7-models-section').classList.add('hidden'); document.getElementById('tab7-models-placeholder').classList.remove('hidden'); document.getElementById('tab7-honesty-btn').classList.add('hidden');
+      }
+      document.getElementById('tab7-current-mark-display').textContent = `Mark: ${tab7Scores[qNum]} / 6`;
+      
+      const kwContainer = document.getElementById('tab7-keywords-chips'); kwContainer.innerHTML = '';
+      document.getElementById('tab7-total-terms-count').textContent = qData.terms.length;
+      qData.terms.forEach(t => {
+        const chip = document.createElement('span'); chip.id = `kw-chip-${t.word.replace(/[^a-zA-Z0-9]/g, '')}`;
+        chip.className = "px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-200 text-slate-600 border border-slate-300"; chip.textContent = t.word;
+        kwContainer.appendChild(chip);
+      });
+      analyzeTab7Text();
+    }
+
+    function analyzeTab7Text() {
+      const text = document.getElementById('tab7-student-answer').value; tab7Answers[currentTab7QId] = text;
+      const words = text.trim().length > 0 ? text.trim().split(/\s+/).length : 0;
+      document.getElementById('tab7-word-count').textContent = `${words} words`;
+      const qData = tab7Questions[currentTab7QId]; let matches = 0;
+      qData.terms.forEach(t => {
+        const chip = document.getElementById(`kw-chip-${t.word.replace(/[^a-zA-Z0-9]/g, '')}`);
+        if (t.regex.test(text)) { matches++; if (chip) chip.className = "px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300"; } 
+        else { if (chip) chip.className = "px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-200 text-slate-600 border border-slate-300"; }
+      });
+      document.getElementById('tab7-matched-terms-count').textContent = matches;
+      const lvl = document.getElementById('tab7-predicted-level');
+      if (matches >= 6 && words >= 40) { lvl.textContent = "Level 3 (5–6 Marks)"; lvl.className = "text-xs font-bold text-emerald-700 block mt-0.2"; } 
+      else if (matches >= 3 && words >= 20) { lvl.textContent = "Level 2 (3–4 Marks)"; lvl.className = "text-xs font-bold text-sky-700 block mt-0.2"; } 
+      else if (words > 10) { lvl.textContent = "Level 1 (1–2 Marks)"; lvl.className = "text-xs font-bold text-amber-700 block mt-0.2"; } 
+      else { lvl.textContent = "Start typing..."; lvl.className = "text-xs font-bold text-slate-400 block mt-0.2"; }
+    }
+
+    function evaluateAndShowModels() {
+      const qData = tab7Questions[currentTab7QId]; const text = document.getElementById('tab7-student-answer').value;
+      let matches = 0; qData.terms.forEach(t => { if (t.regex.test(text)) matches++; });
+      let awarded = matches >= 6 ? 6 : matches >= 4 ? 4 : matches >= 2 ? 2 : text.trim().length > 15 ? 1 : 0;
+      tab7Scores[currentTab7QId] = awarded; tab7Evaluated[currentTab7QId] = true;
+      document.getElementById('tab7-current-mark-display').textContent = `Mark: ${awarded} / 6`;
+      document.getElementById(`tab7-badge-${currentTab7QId}`).textContent = `(${awarded}/6)`;
+      
+      document.getElementById('model-high-text').textContent = qData.highModel; document.getElementById('model-high-commentary').textContent = qData.highComm;
+      document.getElementById('model-med-text').textContent = qData.medModel; document.getElementById('model-med-commentary').textContent = qData.medComm;
+      document.getElementById('model-low-text').textContent = qData.lowModel; document.getElementById('model-low-commentary').textContent = qData.lowComm;
+      
+      document.getElementById('tab7-models-section').classList.remove('hidden'); document.getElementById('tab7-models-placeholder').classList.add('hidden'); document.getElementById('tab7-honesty-btn').classList.remove('hidden');
+      showToast(`Q${currentTab7QId} Evaluated: ${awarded}/6 marks`, "bg-fuchsia-600");
+    }
+
+    function applyHonestyBonus() {
+      if (tab7Scores[currentTab7QId] < 6) {
+        tab7Scores[currentTab7QId]++; document.getElementById('tab7-current-mark-display').textContent = `Mark: ${tab7Scores[currentTab7QId]} / 6`;
+        document.getElementById(`tab7-badge-${currentTab7QId}`).textContent = `(${tab7Scores[currentTab7QId]}/6)`;
+        showToast("+1 Honesty Bonus!", "bg-amber-500 text-slate-900");
+      } else { showToast("Max marks reached!", "bg-slate-700"); }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      shuffledTab1Terms.sort(() => Math.random() - 0.5); shuffledTab1Defs.sort(() => Math.random() - 0.5); renderTab1();
+      shuffleReflex(); renderReflexSequence();
+      tab3Glands.sort(() => Math.random() - 0.5); renderTab3();
+      renderMCQ20();
+      shuffledTab5Terms.sort(() => Math.random() - 0.5); shuffledTab5Defs.sort(() => Math.random() - 0.5); renderTab5();
+      shuffledTab6Terms.sort(() => Math.random() - 0.5); shuffledTab6Defs.sort(() => Math.random() - 0.5); renderTab6();
+      loadTab7Question(1);
+    });
+  </script>
+</body>
+</html>
