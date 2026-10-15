@@ -1226,11 +1226,16 @@
       
       const kwContainer = document.getElementById('tab7-keywords-chips'); kwContainer.innerHTML = '';
       document.getElementById('tab7-total-terms-count').textContent = qData.terms.length;
-      qData.terms.forEach(t => {
+      
+      // Create a shuffled copy of the terms so hints don't appear in chronological order
+      const shuffledHints = [...qData.terms].sort(() => Math.random() - 0.5);
+      
+      shuffledHints.forEach(t => {
         const chip = document.createElement('span'); chip.id = `kw-chip-${t.word.replace(/[^a-zA-Z0-9]/g, '')}`;
         chip.className = "px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-200 text-slate-600 border border-slate-300"; chip.textContent = t.word;
         kwContainer.appendChild(chip);
       });
+      
       analyzeTab7Text();
     }
 
